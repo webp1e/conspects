@@ -1,0 +1,97 @@
+gdb - дебаггер который позволяет прочитать бинарный файл
+
+sudo pacman -S gdb  установка
+
+gdb ./test          запуск
+
+run                 запустить программу
+break main          поставить точку остановки на main
+next                следующая строка
+step                войти внутрь функции
+print x             вывести значение переменной
+info registers      состояние регистров
+quit                выйти
+
+
+запустил тестовый код из папки тесты 
+
+[sigma@archlinux тесты]$ gdb ./test
+GNU gdb (GDB) 17.1
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./test...
+(gdb) run
+Starting program: /home/sigma/rustnew/конспекты/тесты/test 
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) y
+Debuginfod has been enabled.
+To make this setting permanent, add 'set debuginfod enabled on' to .gdbinit.
+Downloading 1.17 M separate debug info for /lib64/ld-linux-x86-64.so.2
+Downloading 9.72 M separate debug info for /usr/lib/libc.so.6                                                                                                                              
+[Thread debugging using libthread_db enabled]                                                                                                                                              
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+Result: 15
+[Inferior 1 (process 72551) exited normally]
+(gdb) break main
+Breakpoint 1 at 0x555555555155: file test.c, line 8.
+(gdb) next
+❌️ The program is not being run.
+(gdb) run
+Starting program: /home/sigma/rustnew/конспекты/тесты/test 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+
+Breakpoint 1, main () at test.c:8
+8           int x = 5;
+(gdb) next
+9           int y = 10;
+(gdb) next
+10          int result = add(x, y);
+(gdb) next
+11          printf("Result: %d\n", result);
+(gdb) next
+Result: 15
+12          return 0;
+(gdb) next
+13      }
+(gdb) next
+Downloading 2.94 K source file /usr/src/debug/glibc/glibc/csu/../sysdeps/nptl/libc_start_call_main.h
+__libc_start_call_main (main=main@entry=0x55555555514d <main>, argc=argc@entry=1, argv=argv@entry=0x7fffffffe348) at ../sysdeps/nptl/libc_start_call_main.h:83                             
+83        exit (result);
+(gdb) 
+
+
+
+
+
+(gdb) print x
+$2 = 0
+(gdb) print y
+$3 = 0
+(gdb) next
+9           int y = 10;
+(gdb) print y
+$4 = 0
+(gdb) print x
+$5 = 5
+(gdb) next
+10          int result = add(x, y);
+(gdb) print x
+$6 = 5
+(gdb) print y
+$7 = 10
+(gdb) 

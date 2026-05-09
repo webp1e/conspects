@@ -1,0 +1,103 @@
+=== NIKTO — сканер уязвимостей веб-сервера ===
+
+Что делает: Ищет опасные файлы, устаревшие версии, неправильные конфигурации
+
+Установка:
+sudo apt install nikto
+
+
+=== БАЗОВЫЕ КОМАНДЫ ===
+
+nikto -h http://site.com
+     → Базовое сканирование сайта
+
+nikto -h http://site.com -ssl
+     → Для HTTPS-сайтов
+
+nikto -h 192.168.1.1 -port 443
+     → Сканировать IP на порту 443
+
+
+=== РАБОТА СО СПИСКАМИ ===
+
+nikto -h http://site.com -Format html -o report.html
+     → Сохранить результат в HTML
+
+nikto -h http://site.com -Format csv -o report.csv
+     → Сохранить в CSV
+
+nikto -h hostlist.txt
+     → Просканировать несколько хостов из файла
+
+
+=== НАСТРОЙКА ЗАПРОСОВ ===
+
+nikto -h http://site.com -useragent "Mozilla/5.0"
+     → Сменить User-Agent
+
+nikto -h http://site.com -timeout 10
+     → Таймаут 10 секунд
+
+nikto -h http://site.com -max-time 60
+     → Остановить сканирование через 60 секунд
+
+
+=== ОБНОВЛЕНИЕ БАЗЫ ===
+
+nikto -update
+     → Обновить базу уязвимостей и сигнатур
+
+
+=== ТОНКАЯ НАСТРОЙКА ===
+
+nikto -h http://site.com -Tuning 123456
+     → Только определённые типы тестов
+     | Коды:
+     | 1 — Интересные файлы/логи
+     | 2 — Плохие конфигурации
+     | 3 — Инъекции
+     | 4 — XSS
+     | 5 — Удалённые файлы (RFI)
+     | 6 — Обход аутентификации
+     | 9 — Подбор атак
+     | 0 — Включить всё
+
+nikto -h http://site.com -Tuning 124
+     → Только файлы, конфиги, XSS (быстрее полного)
+
+
+=== ПРОКСИРОВАНИЕ ===
+
+nikto -h http://site.com -useproxy http://127.0.0.1:8080
+     → Прогнать через Burp Suite
+
+
+=== ПРИМЕР ВЫВОДА ===
+
+- Nikto v2.5.0
++ Target IP: 192.168.1.10
++ Target Hostname: site.com
++ Port: 80
++ Server: Apache/2.4.41 (Ubuntu)
++ The anti-clickjacking X-Frame-Options header is not present.
++ Apache/2.4.41 appears to be outdated.
++ /backup.zip: Backup file found. (High risk)
++ /phpinfo.php: PHP info file found. (Medium risk)
++ /admin/: Admin login page found.
++ 8415 requests: 0 error(s), 17 finding(s)
+
+
+=== ЧТО ХОРОШО НАХОДИТ ===
+
+— Бэкап файлы (.zip, .tar, .sql, .bak)
+— phpinfo.php
+— Панели администрирования (/admin, /login)
+— Устаревшие версии Apache/nginx
+— Интересные файлы роботов (/robots.txt)
+
+
+=== КОГДА ИСПОЛЬЗОВАТЬ ===
+
+— Самое начало пентеста (грубая разведка)
+— Нужно быстро найти очевидные дыры
+— Проверить, не забыл ли админ бэкап на сервере

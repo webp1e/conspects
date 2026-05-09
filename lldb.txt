@@ -1,0 +1,162 @@
+lldb - замена gdb  которая позволяет читать бинарные файлы
+
+
+[sigma@archlinux debug]$ lldb ./baxum
+(lldb) target create "./baxum"
+Current executable set to '/home/sigma/rustnew/web/baxum/target/debug/baxum' (x86_64).
+(lldb) breakpoint set --name main
+Breakpoint 1: 2 locations.
+(lldb) c
+error: Command requires a current process.
+(lldb) run
+Process 239112 launched: '/home/sigma/rustnew/web/baxum/target/debug/baxum' (x86_64)
+Process 239112 stopped
+* thread #1, name = 'baxum', stop reason = breakpoint 1.2
+    frame #0: 0x0000555555668330 baxum`main
+baxum`main:
+->  0x555555668330 <+0>:  pushq  %rax
+    0x555555668331 <+1>:  movq   %rsi, %rdx
+    0x555555668334 <+4>:  movq   0x2506ad(%rip), %rax
+    0x55555566833b <+11>: movb   (%rax), %al
+(lldb) c
+Process 239112 resuming
+Process 239112 stopped
+* thread #1, name = 'baxum', stop reason = breakpoint 1.1
+    frame #0: 0x0000555555668137 baxum`baxum::main::h56000d4e2a799984 at main.rs:18:1
+   15       name: String,
+   16   }
+   17  
+-> 18   #[tokio::main]
+   19   async fn main() {
+   20       let app = Router::new()
+   21           .route("/", get(ind))
+(lldb) settings set target.language rust
+error: invalid language type 'rust', valid values are:
+    c89
+    c
+    c++
+    c99
+    objective-c
+    objective-c++
+    c++03
+    c++11
+    c11
+    c++14
+    c++17
+    c++20
+(lldb) source list -c 100
+note: Reached end of the file, no more to page
+(lldb) run
+There is a running process, kill it and restart?: [Y/n] y
+Process 239112 exited with status = 9 (0x00000009) killed
+Process 243871 launched: '/home/sigma/rustnew/web/baxum/target/debug/baxum' (x86_64)
+Process 243871 stopped
+* thread #1, name = 'baxum', stop reason = breakpoint 1.2
+    frame #0: 0x0000555555668330 baxum`main
+baxum`main:
+->  0x555555668330 <+0>:  pushq  %rax
+    0x555555668331 <+1>:  movq   %rsi, %rdx
+    0x555555668334 <+4>:  movq   0x2506ad(%rip), %rax
+    0x55555566833b <+11>: movb   (%rax), %al
+(lldb) source list -c 100
+note: Reached end of the file, no more to page
+(lldb) source list -c 5
+note: Reached end of the file, no more to page
+(lldb) c
+Process 243871 resuming
+Process 243871 stopped
+* thread #1, name = 'baxum', stop reason = breakpoint 1.1
+    frame #0: 0x0000555555668137 baxum`baxum::main::h56000d4e2a799984 at main.rs:18:1
+   15       name: String,
+   16   }
+   17  
+-> 18   #[tokio::main]
+   19   async fn main() {
+   20       let app = Router::new()
+   21           .route("/", get(ind))
+(lldb) source l
+   22           .route("/about", get(about))
+   23           .route("/html", get(html))
+   24           .route("/html2", get(html2))
+   25           .route("/login", post(login))
+   26           .route("/yo", post(yo))
+   27           .route("/about/:name", get(name));
+   28  
+(lldb) l
+   29       let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+   30       axum::serve(listener, app).await.unwrap();
+   31   }
+   32  
+   33   async fn login(Json(data): Json<Login>) -> String {
+   34       format!("привет {}\n", data.username)
+   35   }
+(lldb) l
+   36  
+   37   async fn yo(Json(yo_name): Json<Yo>) -> String {
+   38       format!("привет {}, тебе {} лет\n", yo_name.name, yo_name.yo)
+   39   }
+   40  
+   41  
+   42   async fn ind() -> &'static str {
+(lldb) l
+   43       "хеллоу ворлд hello world"
+   44   }
+   45  
+   46   async fn about() -> &'static str {
+   47       "я жирный"
+   48   }
+   49  
+(lldb) l
+   50   async fn name(axum::extract::Path(name): axum::extract::Path<String>) -> String {
+   51       format!("привет {} ", name)
+   52   }
+   53  
+   54   async fn html() -> Html<&'static str> {
+   55       Html("<h1>привет</h1><p>мой хмтл на раст</p>")
+   56   }
+(lldb) l
+   57  
+   58   async fn html2() -> Html<String> {
+   59       let html = fs::read_to_string("jaguar.html").unwrap_or_else(|_| {
+   60           "файл не найден".to_string()
+   61       });
+   62       Html(html)
+   63   }
+(lldb) l
+   64  
+   65  
+   66  
+   67  
+   68  
+   69  
+(lldb) l
+note: Reached end of the file, no more to page
+(lldb) source list 69
+error: 'source list' doesn't take any arguments.
+(lldb) source list -c 69
+note: Reached end of the file, no more to page
+(lldb) run
+There is a running process, kill it and restart?: [Y/n] y
+Process 243871 exited with status = 9 (0x00000009) killed
+Process 248723 launched: '/home/sigma/rustnew/web/baxum/target/debug/baxum' (x86_64)
+Process 248723 stopped
+* thread #1, name = 'baxum', stop reason = breakpoint 1.2
+    frame #0: 0x0000555555668330 baxum`main
+baxum`main:
+->  0x555555668330 <+0>:  pushq  %rax
+    0x555555668331 <+1>:  movq   %rsi, %rdx
+    0x555555668334 <+4>:  movq   0x2506ad(%rip), %rax
+    0x55555566833b <+11>: movb   (%rax), %al
+(lldb) source list -c 69
+note: Reached end of the file, no more to page
+(lldb) 
+
+
+
+
+
+как прочитать память
+memory read 0xADDRESS
+
+смотрим память переменной 
+p &переменная

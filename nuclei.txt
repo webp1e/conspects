@@ -1,0 +1,46 @@
+Что это: Сканер уязвимостей по YAML-шаблонам (тысячи готовых проверок)
+
+Установка:
+bash
+
+go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+nuclei -update-templates   # Обновить базу шаблонов (обязательно!)
+
+Базовые команды:
+Команда	Что делает
+nuclei -u http://example.com	Сканировать один сайт (всеми шаблонами)
+nuclei -l urls.txt	Сканировать список сайтов
+nuclei -u http://example.com -severity critical,high	Только критические и высокие уязвимости
+nuclei -u http://example.com -tags wordpress	Только шаблоны с тегом WordPress
+nuclei -u http://example.com -tags cve	Только CVE-уязвимости
+
+Полезные флаги:
+Флаг	Описание
+-severity info,low,medium,high,critical	Фильтр по серьёзности
+-tags wordpress,cve,api	Фильтр по тегам
+-exclude-templates dos	Исключить шаблоны (например, DoS-атаки)
+-t template.yaml	Использовать конкретный шаблон
+-tl	Показать список всех шаблонов
+-markdown-export ./	Сохранить отчёт в Markdown
+-json	Вывод в JSON для автоматизации
+-proxy 127.0.0.1:8080	Прогнать через Burp
+-timeout 5	Таймаут в секундах
+
+Пример фильтрации по тегам:
+bash
+
+# Только критическое + CVE
+nuclei -u example.com -tags cve -severity critical
+
+# Всё, кроме информационных
+nuclei -u example.com -severity low,medium,high,critical
+
+# Только шаблоны для API
+nuclei -u example.com -tags api
+
+Пример вывода при нахождении уязвимости:
+text
+
+[LOG4J-CVE-2021-44228] [http] [critical] http://example.com
+
+Когда использовать: После разведки — быстро проверить цель на известные дыры. Не заменяет ручной тест, но экономит часы работы.

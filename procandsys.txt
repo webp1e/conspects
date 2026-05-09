@@ -1,0 +1,21 @@
+/proc и /sys это виртуальные файловые системы, они не хранят реальные файоы а показывают информацию о системе в реальном времени
+
+/proc - информация о процессах и ядре
+cat /proc/cpuinfo                информация о процессоре
+cat /proc/meminfo                информация о оперативной памяти
+cat /proc/uptime                 информация о времени сколько пк включен
+ls /proc/                        список всех процессов
+cat /prc/1/status                информация о процессе с PID 1
+
+/sys - информация об оборудовании
+cat /sys/class/net/eth0/speed    скорость сети
+ls /sys/class/                   список устройств
+
+основные команды
+cat /proc/uptime | head -10
+cat /proc/cpuinfo | head -10
+cat /proc/meminfo | head -10
+ls /proc/$$
+cat /proc/$$/cmdline
+cat /proc/$$/status | head -10
+cat /proc/$$/environ | tr '\0' '\n' | head -10

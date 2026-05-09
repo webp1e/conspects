@@ -1,0 +1,125 @@
+ps aux                  вывод всех процессов
+ps aux | grep firefox   найти конктретный процесс
+top                     процессы в реальном времени
+htop                    тоже самое что top но красивее
+pgrep firefox           найти pid по имени
+kill 1234               убить процесс по pid
+killall firefox         убить по имени
+
+R - running, работает
+S - sleeping, ждёт
+Z - zombie, завершился но родитель не подобрал
+D - ждёт диск
+
+pstree - дерево процессов
+
+каждый процесс кроме первого имеет родителя. 1 это systemd - прародитель всех процессов
+
+
+
+[sigma@archlinux ~]$ ps aux | head -15
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0  23788 15500 ?        Ss   16:40   0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize=52
+root           2  0.0  0.0      0     0 ?        S    16:40   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    16:40   0:00 [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-rcu_gp]
+root           5  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-sync_wq]
+root           6  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-kvfree_rcu_reclaim]
+root           7  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-slub_flushwq]
+root           8  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-netns]
+root           9  0.0  0.0      0     0 ?        I    16:40   0:00 [kworker/0:0-events]
+root          10  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/0:0H-events_highpri]
+root          13  0.0  0.0      0     0 ?        I<   16:40   0:00 [kworker/R-mm_percpu_wq]
+root          15  0.0  0.0      0     0 ?        S    16:40   0:00 [ksoftirqd/0]
+root          16  0.2  0.0      0     0 ?        I    16:40   0:11 [rcu_preempt]
+root          17  0.0  0.0      0     0 ?        S    16:40   0:00 [rcub/0]
+[sigma@archlinux ~]$ pstree | head -20
+systemd-+-NetworkManager---3*[{NetworkManager}]
+        |-bash---sleep
+        |-chrome_crashpad---2*[{chrome_crashpad}]
+        |-code-+-code---code---19*[{code}]
+        |      |-code---code---code---24*[{code}]
+        |      |-code---11*[{code}]
+        |      |-code-+-bash
+        |      |      `-20*[{code}]
+        |      |-2*[code---19*[{code}]]
+        |      |-code---22*[{code}]
+        |      `-43*[{code}]
+        |-crashhelper---{crashhelper}
+        |-dbus-broker-lau---dbus-broker
+        |-firefox-+-bwrap
+        |         |-forkserver-+-Isolated Servic---28*[{Isolated Servic}]
+        |         |            |-Isolated Web Co---42*[{Isolated Web Co}]
+        |         |            |-Isolated Web Co---28*[{Isolated Web Co}]
+        |         |            |-Isolated Web Co---27*[{Isolated Web Co}]
+        |         |            |-Privileged Cont---26*[{Privileged Cont}]
+        |         |            |-RDD Process---18*[{RDD Process}]
+[sigma@archlinux ~]$ 
+
+
+USER    - кто запустил
+PID     - айди процессора
+%GPU    - сколько жрёт процессора
+%MEM    - сколько жрёт ОЗУ
+COMMAND - название программы
+
+
+[sigma@archlinux ~]$ ps aux --sort=-%cpu | head -5
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+sigma     271966  300  0.0  10628  5412 pts/1    R+   18:14   0:00 ps aux --sort=-%cpu
+sigma       1519 21.1  0.9 2495072 152540 tty1   Ssl+ 16:41  19:45 Hyprland
+sigma       2751 18.0  4.5 12457948 744624 tty1  Rl+  16:42  16:43 /usr/lib/firefox/firefox
+sigma       4938 12.2  2.9 20021440 485744 tty1  Sl+  16:42  11:15 /usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:45632 -prefMapHandle 1:285319 -jsInitHandle 2:156136 -parentBuildID 20260323182030 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {39301408-047e-4613-b2ed-edf341864223} -parentPid 2751 -crashReporter 6 -crashHelper 7 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 9 tab
+[sigma@archlinux ~]$ 
+
+[sigma@archlinux ~]$ ps aux --sort=-%mem | head -5
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+sigma       2751 17.9  4.5 12455052 744596 tty1  Sl+  16:42  16:54 /usr/lib/firefox/firefox
+sigma       4938 12.2  2.9 20020624 483332 tty1  Sl+  16:42  11:25 /usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:45632 -prefMapHandle 1:285319 -jsInitHandle 2:156136 -parentBuildID 20260323182030 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {39301408-047e-4613-b2ed-edf341864223} -parentPid 2751 -crashReporter 6 -crashHelper 7 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 9 tab
+sigma     161110  2.9  2.4 3059664 405648 tty1   Sl+  17:52   0:42 /usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:45796 -prefMapHandle 1:285319 -jsInitHandle 2:156136 -parentBuildID 20260323182030 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {502e7d9a-34cc-41b2-bfa2-1b1002e770d4} -parentPid 2751 -crashReporter 6 -crashHelper 7 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 11 tab
+sigma       5246  2.8  2.1 1464877272 352520 ?   Sl   16:43   2:41 /opt/visual-studio-code/code --type=zygote
+[sigma@archlinux ~]$ 
+
+самые жручие программы
+
+
+
+        ПРАВА
+
+ls -la      список файлов с правами
+whoami      кто ты
+id          твой uid, gid, группы
+sudo whoami выполнить как root
+
+как выглядят права
+-rwxr-xr-x
+
+разбивка
+- rwx r-x r-x
+│  │   │   │
+│  │   │   └── остальные (читать, выполнять)
+│  │   └────── группа (читать, выполнять)  
+│  └────────── владелец (читать, писать, выполнять)
+└───────────── тип (- файл, d папка, l ссылка)
+
+r - read
+w - write
+x - execute
+
+
+-rw-r--r--   1 sigma sigma   11873328 фев 19 22:19  BA.mp4          - владелец может читать и изменять. другие группы только читать
+-rw-------   1 sigma sigma       9082 апр  5 16:43  .bash_history   - владелец может читать и изменять. другие группы не могут ничего
+
+
+
+chmod - изменение прав пользователей
+755 - стандарт для исполняемых файлов и папок - rwxr-xr-x
+644 - стандарт для обычных файлов
+600 - приватные файлы - rw--------
+
+chmod 755 file
+chmod 644 file
+chmod 600 file
+chmod +x file - добавить execute всем
+chmod {имя владельца} file - изменить владельца
+

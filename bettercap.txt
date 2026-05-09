@@ -1,0 +1,55 @@
+bettercap - инструмент для MITM(man in the middle) атак который не просто слушает трафик как wireshark а говорит устройствам в локали о том что весь трафик должен идти через него
+
+sudo pacman -S bettercap
+
+bettercap использует mitm атаку через arp spoofing
+
+используется только в локали
+
+запуск
+sudo bettercap -iface enp3s0            или же свой интерфейс
+
+основные команды
+
+net.probe on                            сканировать все устройства в сети
+net.show                                показать все устройства 
+apr.spoof on                            начать ARP spoofing
+net.sniff on                            перехватывать трафик
+set arp.spoof.targets 192.168.1.5       цель конкретный ip
+
+
+пример
+
+[sigma@archlinux ~]$ netstat -i
+Kernel Interface table
+Iface             MTU    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+enp7s0           1500    35025      0      0 0         24845      0      0      0 BMRU
+lo              65536    61549      0      0 0         61549      0      0      0 LRU
+tailscale0       1280      134      0      0 0           326      0      0      0 MOPRU
+[sigma@archlinux ~]$ sudo bettercap -iface enp7s0
+bettercap v2.41.5 (built for linux amd64 with go1.25.5 X:nodwarf5) [type 'help' for a list of commands]
+
+192.168.0.0/24 > 192.168.0.107  » [15:27:56] [sys.log] [inf] gateway monitor started ...
+192.168.0.0/24 > 192.168.0.107  » net.probe on
+192.168.0.0/24 > 192.168.0.107  » [15:28:08] [sys.log] [inf] net.probe starting net.recon as a requirement for net.probe
+192.168.0.0/24 > 192.168.0.107  » [15:28:08] [sys.log] [inf] zerogod service discovery started
+192.168.0.0/24 > 192.168.0.107  » [15:28:08] [sys.log] [inf] net.probe probing 256 addresses on 192.168.0.0/24
+192.168.0.0/24 > 192.168.0.107  » [15:28:08] [endpoint.new] endpoint 192.168.0.102 detected as b8:87:6e:2f:db:50 (Intertech Services AG).
+192.168.0.0/24 > 192.168.0.107  » [15:28:09] [endpoint.new] endpoint 192.168.0.101 detected as 32:b7:b3:fb:a3:76.
+192.168.0.0/24 > 192.168.0.107  » net[15:28:11] [endpoint.new] endpoint 192.168.0.100 detected as 30:be:29:9a:7e:e1.
+192.168.0.0/24 > 192.168.0.107  » net.[15:28:11] [endpoint.new] endpoint 192.168.0.105 detected as d0:d0:03:f6:89:46 (Samsung Electronics Co.,Ltd).
+192.168.0.0/24 > 192.168.0.107  » net.show
+
+┌───────────────┬───────────────────┬─────────────────────────────────────────────────────┬───────────────────────────────┬────────┬───────┬──────────┐
+│     IP ▴      │        MAC        │                        Name                         │            Vendor             │  Sent  │ Recvd │   Seen   │
+├───────────────┼───────────────────┼─────────────────────────────────────────────────────┼───────────────────────────────┼────────┼───────┼──────────┤
+│ 192.168.0.107 │ 22:02:05:3d:09:2c │ enp7s0                                              │                               │ 0 B    │ 0 B   │ 15:27:56 │
+│ 192.168.0.1   │ 74:da:88:27:6e:0c │ gateway                                             │ TP-LINK TECHNOLOGIES CO.,LTD. │ 120 B  │ 156 B │ 15:27:56 │
+│               │                   │                                                     │                               │        │       │          │
+│ 192.168.0.100 │ 30:be:29:9a:7e:e1 │                                                     │                               │ 1.0 kB │ 170 B │ 15:28:12 │
+│ 192.168.0.101 │ 32:b7:b3:fb:a3:76 │                                                     │                               │ 180 B  │ 170 B │ 15:28:09 │
+│ 192.168.0.102 │ b8:87:6e:2f:db:50 │ yandexmicro-LP0000000000000682130000e3cbe910.local. │ Intertech Services AG         │ 918 B  │ 170 B │ 15:28:12 │
+│ 192.168.0.105 │ d0:d0:03:f6:89:46 │                                                     │ Samsung Electronics Co.,Ltd   │ 0 B    │ 170 B │ 15:28:11 │
+└───────────────┴───────────────────┴─────────────────────────────────────────────────────┴───────────────────────────────┴────────┴───────┴──────────┘
+
+↑ 13 kB / ↓ 108 kB / 1065 pkts

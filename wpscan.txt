@@ -1,0 +1,130 @@
+wpscan - программа которая специализируется на wordpress сайтах определяя плагины и их версии а после используя собранные данные ищет уязвимости по базе данных
+
+базовый скан
+wpscan --url https://target.com
+
+флаги
+--url               цель
+--enumerate         о чем собирать информацию
+--wordlist          список для брутфорса
+--username          логин для брутфорса
+--api-token         токен с wpscan.com (больше инфы о CVE)
+
+enumerate принимает
+u                   users
+p                   plugins
+t                   themes
+vp                  vulnerable plugins only
+ap                  all plugins
+
+примеры команд
+брут одного юзера
+wpscan --url https://target.com --username admin --wordlist /usr/share/wordlists/rockyou.txt
+
+брут нескольких юзеров
+wpscan --url https://target.com --usernames users.txt --wordlist /usr/share/wordlists/rockyou.txt
+
+с потоками (быстрее)
+wpscan --url https://target.com --username admin --wordlist /usr/share/wordlists/rockyou.txt --max-threads 50
+
+все пользователи
+wpscan --url https://target.com --enumerate u
+
+уязвимые плагины
+wpscan --url https://target.com --enumerate vp
+
+все плагины
+wpscan --url https://target.com --enumerate ap
+
+все темы
+wpscan --url https://target.com --enumerate t
+
+всё сразу
+wpscan --url https://target.com --enumerate u,vp,t
+
+с API токеном (больше CVE данных)
+wpscan --url https://target.com --enumerate vp --api-token ТУТТОКЕН
+
+
+
+
+
+
+=== WPSCAN — сканер уязвимостей WordPress ===
+
+Что делает: Ищет уязвимые плагины, темы, пользователей
+
+ОБЯЗАТЕЛЬНО: wpscan --update   (обновить базу уязвимостей)
+
+
+=== БАЗОВЫЕ КОМАНДЫ ===
+
+wpscan --url http://site.com
+     → Базовое сканирование (версия WP, темы, плагины)
+
+wpscan --url http://site.com --enumerate p
+     → Перечислить ВСЕ плагины
+
+wpscan --url http://site.com --enumerate u
+     → Найти пользователей (админов)
+
+wpscan --url http://site.com --enumerate t
+     → Найти темы
+
+wpscan --url http://site.com --enumerate vp
+     → Только уязвимые плагины
+
+wpscan --url http://site.com --enumerate ap
+     → Все плагины (популярные + уязвимые)
+
+
+=== ПЕРЕБОР ПАРОЛЕЙ (BRUTE FORCE) ===
+
+wpscan --url http://site.com --passwords /usr/share/wordlists/rockyou.txt --usernames admin
+     → Подобрать пароль для пользователя admin
+
+wpscan --url http://site.com --passwords rockyou.txt --usernames user1,user2,admin
+     → Подобрать пароли для нескольких пользователей
+
+wpscan --url http://site.com --password-attack xmlrpc --usernames admin --passwords list.txt
+     → Атака через xmlrpc.php (обходит некоторые защиты)
+
+
+=== API КЛЮЧ ===
+
+Без API ключа wpscan работает медленно и не показывает детали уязвимостей
+→ Регистрация на wpscan.com/register (бесплатно)
+→ Добавить ключ: wpscan --url site.com --api-token ТВОЙ_ТОКЕН
+
+
+=== ПОЛЕЗНЫЕ ФЛАГИ ===
+
+--detection-mode mixed     → Лучше находит плагины (медленнее)
+--plugins-detection aggressive   → Агрессивный поиск плагинов
+--random-user-agent        → Случайный User-Agent (обход блокировок)
+--proxy 127.0.0.1:8080     → Прогнать через Burp Suite
+--output result.json       → Сохранить результат в JSON
+--verbose                  → Подробный вывод
+
+
+=== ПРИМЕР ПОЛНОГО СКАНА ===
+
+wpscan --url http://site.com --api-key ТОКЕН --enumerate vp,vt,u --detection-mode mixed
+
+
+=== ЧТО ВЫ УВИДИТЕ В РЕЗУЛЬТАТЕ ===
+
+[+] WordPress version 5.8.1 identified (Critical: CVE-2021-12345)
+[+] Enumerating plugins:
+    - plugin-name v1.0.0 (High: CVE-2021-54321)
+[+] Enumerating users:
+    | admin
+    | john_doe
+[i] Brute force attack recommended on admin
+
+
+=== КОГДА ИСПОЛЬЗОВАТЬ ===
+
+— Цель точно на WordPress
+— Нужно быстро найти уязвимые плагины/темы
+— Нужно перебрать пароль для wp-admin

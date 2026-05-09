@@ -1,0 +1,5 @@
+yay wifite
+sudo pacman -S reaver
+sudo pacman -S aircrack-ng
+
+программа для проверки нескольких wifi на уязвимости

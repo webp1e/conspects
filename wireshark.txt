@@ -1,0 +1,17 @@
+для запуска
+
+[sigma@archlinux ~]$ sudo usermod -aG wireshark sigma
+[sudo] пароль для sigma: 
+[sigma@archlinux ~]$ newgrp wireshark
+[sigma@archlinux ~]$ wireshark
+
+полсе этого нужно вводить только wireshark
+
+команды для сортировки говна в wireshark
+
+
+http                            всё что связано с http
+http.request                    только запросы
+http.response                   только ответы
+http && ip.dst == 127.0.0.1    отображение только запросы 127.0.0.1
+tcp.port == порт                отображение только всё что на порту

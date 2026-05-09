@@ -1,0 +1,165 @@
+=== FFUF — Fuzz Faster U Fool ===
+Быстрый фаззер для перебора директорий, файлов, параметров, виртуальных хостов
+
+Установка:
+sudo apt install ffuf
+или
+go install github.com/ffuf/ffuf/v2@latest
+
+
+=== БАЗОВАЯ КОМАНДА (директории/файлы) ===
+
+ffuf -u http://site.com/FUZZ -w /usr/share/wordlists/dirb/common.txt
+
+     → FUZZ — место, куда подставляются слова из словаря
+     → -w — путь к словарю
+
+
+=== ОСНОВНЫЕ РЕЖИМЫ ===
+
+1. ПЕРЕБОР ДИРЕКТОРИЙ:
+ffuf -u http://site.com/FUZZ -w /path/to/wordlist.txt
+
+2. ПЕРЕБОР ФАЙЛОВ (с расширениями):
+ffuf -u http://site.com/FUZZ.php -w wordlist.txt
+
+3. ПЕРЕБОР ПАРАМЕТРОВ (GET):
+ffuf -u "http://site.com/page.php?FUZZ=test" -w parameter-list.txt
+
+4. ПЕРЕБОР ЗНАЧЕНИЙ ПАРАМЕТРОВ (IDOR, перебор ID):
+ffuf -u "http://site.com/user?id=FUZZ" -w ids.txt
+
+5. ВИРТУАЛЬНЫЕ ХОСТЫ (VHOST):
+ffuf -u "http://site.com" -H "Host: FUZZ.site.com" -w subdomains.txt
+
+
+=== ПОЛЕЗНЫЕ ФЛАГИ ===
+
+-fs 12345              → Исключить ответы с размером 12345 байт (скрыть 404 страницы)
+-fc 403,404,500        → Исключить коды ответа 403,404,500
+-fr "not found"        → Исключить ответы, содержащие текст "not found"
+-ac                     → Автоматическая калибровка фильтров (магия!)
+-s                      → Тихий режим (только результаты)
+-c                      → Цветной вывод
+-v                      → Подробный вывод
+-t 50                   → Количество потоков (по умолчанию 40)
+-timeout 10             → Таймаут в секундах
+-delay 0.1              → Задержка между запросами (сек)
+-recursion              → Рекурсивный перебор найденных директорий
+-recursion-depth 3      → Глубина рекурсии
+-e .php,.html,.txt      → Добавить расширения к каждому слову
+
+
+=== ФИЛЬТРАЦИЯ РЕЗУЛЬТАТОВ (ВАЖНО!) ===
+
+Сайты обычно возвращают 404 страницу с определённым размером.
+Чтобы убрать мусор, фильтруем по размеру:
+
+1. Сначала запустить БЕЗ фильтрации:
+ffuf -u http://site.com/FUZZ -w wordlist.txt
+
+2. Посмотреть типичный размер страницы 404 (например, 12345):
+
+3. Запустить С фильтрацией:
+ffuf -u http://site.com/FUZZ -w wordlist.txt -fs 12345
+
+
+=== ПРИМЕРЫ ===
+
+1. Базовый перебор директорий с фильтром 404 страницы:
+ffuf -u http://site.com/FUZZ -w /usr/share/wordlists/dirb/common.txt -fs 12456
+
+2. Перебор файлов с расширениями:
+ffuf -u http://site.com/FUZZ -w wordlist.txt -e .php,.txt,.bak -fc 404
+
+3. Перебор GET параметров:
+ffuf -u "http://site.com/search?FUZZ=test" -w params.txt -fs 5000
+
+4. Перебор ID в URL (поиск IDOR):
+ffuf -u "http://site.com/profile?id=FUZZ" -w ids.txt -fc 403,404
+
+5. С автоматической калибровкой (решает проблемы с фильтрацией):
+ffuf -u http://site.com/FUZZ -w wordlist.txt -ac
+
+6. Рекурсивный перебор:
+ffuf -u http://site.com/FUZZ -w wordlist.txt -recursion -recursion-depth 2 -fc 404
+
+7. Перебор виртуальных хостов:
+ffuf -u http://site.com -H "Host: FUZZ.site.com" -w vhosts.txt -fs 12456
+
+
+=== ДВОЙНОЙ ФАЗЗИНГ (две точки подстановки) ===
+
+ffuf -u "http://site.com/FUZZ/page?user=USER" -w wordlist.txt:FUZZ -w users.txt:USER
+
+     → FUZZ перебирает директории
+     → USER перебирает имена пользователей
+
+
+=== ИСПОЛЬЗОВАНИЕ БОЛЬШИХ СЛОВАРЕЙ ===
+
+ffuf -u http://site.com/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 100 -fs 12456
+
+     → -t 100 — увеличить потоки для скорости
+     → Но не переусердствуйте (может забанить сервер)
+
+
+=== ВЫВОД РЕЗУЛЬТАТОВ ===
+
+-json                    → Вывод в JSON
+-o result.json           → Сохранить результат в файл
+-od ./output             → Сохранить ответы сервера в папку
+
+
+=== ПРИМЕР FULL СКАНА ===
+
+ffuf -u http://site.com/FUZZ \
+     -w /usr/share/wordlists/dirb/common.txt \
+     -e .php,.html,.bak,.sql \
+     -fc 403,404,500 \
+     -fs 12345 \
+     -t 50 \
+     -c \
+     -recursion \
+     -o scan.json
+
+
+=== ЧТО ВЫ УВИДИТЕ В РЕЗУЛЬТАТЕ ===
+
+[Status: 200, Size: 3452, Words: 520, Lines: 78]
+| URL | http://site.com/admin
+| --> admin страница найдена
+
+[Status: 403, Size: 289, Words: 45, Lines: 12]
+| URL | http://site.com/config
+| --> доступ запрещён (но директория существует!)
+
+[Status: 200, Size: 12345, Words: 800, Lines: 150]
+| URL | http://site.com/backup.zip
+| --> бэкап файл найден!
+
+
+=== ТИПОВЫЕ СЛОВАРИ (где брать) ===
+
+/usr/share/wordlists/dirb/common.txt          — стандартный (4614 слов)
+/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt  — большой (220560 слов)
+/usr/share/seclists/Discovery/Web-Content/    — лучшие словари (установить: sudo apt seclists)
+
+
+=== КОГДА ИСПОЛЬЗОВАТЬ ===
+
+— Нужно найти скрытые директории (/admin, /backup, /api)
+— Нужно найти скрытые файлы (.git, .env, config.php)
+— Нужно перебрать параметры (поиск уязвимостей типа IDOR)
+— Нужно перебрать ID, коды, токены
+— Поиск виртуальных хостов
+
+
+=== СОВЕТЫ ===
+
+1. ВСЕГДА начинайте с фильтрации размера ответа (его легко убрать мусорные 404)
+2. Используйте -ac если не знаете точный размер 404 страницы
+3. Не ставьте -t 500+ на живых сайтах — вас забанят
+4. Для больших словарей используйте -t 100-200 и delay 0
+5. Комбинируйте -fc и -fs для лучшей фильтрации
+6. Сначала быстрый сканер (dirb/common.txt), потом глубокий (directory-list-2.3-medium.txt)
